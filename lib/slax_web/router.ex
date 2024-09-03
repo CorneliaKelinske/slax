@@ -19,7 +19,6 @@ defmodule SlaxWeb.Router do
 
     live "/", ChatRoomLive
     live "/rooms/:id", ChatRoomLive
-
   end
 
   # Other scopes may use custom stacks.
