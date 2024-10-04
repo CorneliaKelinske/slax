@@ -34,7 +34,6 @@ defmodule SlaxWeb.ChatRoomLive do
             >
               Edit
             </.link>
-            
           </h1>
           <div class="text-xs leading-none h-3.5" phx-click="toggle-topic">
             <%= if @hide_topic? do %>
