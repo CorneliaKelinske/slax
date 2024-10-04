@@ -18,7 +18,6 @@ defmodule SlaxWeb.ChatRoomLive.Edit do
         </:actions>
       </.header>
 
-
       <.simple_form for={@form} id="room-form" phx-change="validate-room" phx-submit="save-room">
         <.input field={@form[:name]} type="text" label="Name" />
         <.input field={@form[:topic]} type="text" label="Topic" />
@@ -26,7 +25,6 @@ defmodule SlaxWeb.ChatRoomLive.Edit do
           <.button phx-disable-with="Saving..." class="w-full">Save</.button>
         </:actions>
       </.simple_form>
-
     </div>
     """
   end
@@ -50,7 +48,6 @@ defmodule SlaxWeb.ChatRoomLive.Edit do
       |> Chat.change_room(room_params)
       |> Map.put(:action, :validate)
 
-
     {:noreply, assign_form(socket, changeset)}
   end
 
@@ -67,9 +64,7 @@ defmodule SlaxWeb.ChatRoomLive.Edit do
     end
   end
 
-
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     assign(socket, :form, to_form(changeset))
   end
-
 end
