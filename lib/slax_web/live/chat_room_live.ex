@@ -46,7 +46,7 @@ defmodule SlaxWeb.ChatRoomLive do
         <ul class="relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
       <%= if @current_user do %>
         <li class="text-[0.8125rem] leading-6 text-zinc-900">
-          <%= @current_user.email %>
+          <%= username(@current_user) %>
         </li>
         <li>
           <.link
@@ -121,7 +121,7 @@ defmodule SlaxWeb.ChatRoomLive do
       <div class="ml-2">
         <div class="-mt-1">
           <.link class="text-sm font-semibold hover:underline">
-            <span>User</span>
+            <span><%= username(@message.user) %></span>
           </.link>
           <p class="text-sm"><%= @message.body %></p>
         </div>
@@ -161,4 +161,9 @@ defmodule SlaxWeb.ChatRoomLive do
   def handle_event("toggle-topic", _params, socket) do
     {:noreply, update(socket, :hide_topic?, &(!&1))}
   end
+
+  defp username(user) do
+    user.email |> String.split("@") |> List.first() |> String.capitalize()
+  end
+
 end
