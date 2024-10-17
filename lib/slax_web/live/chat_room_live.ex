@@ -44,54 +44,52 @@ defmodule SlaxWeb.ChatRoomLive do
           </div>
         </div>
         <ul class="relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
-      <%= if @current_user do %>
-        <li class="text-[0.8125rem] leading-6 text-zinc-900">
-          <%= username(@current_user) %>
-        </li>
-        <li>
-          <.link
-            href={~p"/users/settings"}
-            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
-          >
-            Settings
-          </.link>
-        </li>
-        <li>
-          <.link
-            href={~p"/users/log_out"}
-            method="delete"
-            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
-          >
-            Log out
-          </.link>
-        </li>
-      <% else %>
-        <li>
-          <.link
-            href={~p"/users/register"}
-            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
-          >
-            Register
-          </.link>
-        </li>
-        <li>
-          <.link
-            href={~p"/users/log_in"}
-            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
-          >
-            Log in
-          </.link>
-        </li>
-      <% end %>
-    </ul>
+          <%= if @current_user do %>
+            <li class="text-[0.8125rem] leading-6 text-zinc-900">
+              <%= username(@current_user) %>
+            </li>
+            <li>
+              <.link
+                href={~p"/users/settings"}
+                class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
+              >
+                Settings
+              </.link>
+            </li>
+            <li>
+              <.link
+                href={~p"/users/log_out"}
+                method="delete"
+                class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
+              >
+                Log out
+              </.link>
+            </li>
+          <% else %>
+            <li>
+              <.link
+                href={~p"/users/register"}
+                class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
+              >
+                Register
+              </.link>
+            </li>
+            <li>
+              <.link
+                href={~p"/users/log_in"}
+                class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
+              >
+                Log in
+              </.link>
+            </li>
+          <% end %>
+        </ul>
       </div>
       <div id="room-messages" class="flex flex-col flex-grow overflow-auto" phx-update="stream">
-      <.message :for={{dom_id, message} <- @streams.messages} dom_id={dom_id}
-      message={message} />
+        <.message :for={{dom_id, message} <- @streams.messages} dom_id={dom_id} message={message} />
       </div>
 
-
-     <div class="h-12 bg-white px-4 pb-4">
+      <div class="h-12 bg-white px-4 pb-4">
         <.form
           id="new-message-form"
           for={@new_message_form}
@@ -148,6 +146,7 @@ defmodule SlaxWeb.ChatRoomLive do
         <div class="-mt-1">
           <.link class="text-sm font-semibold hover:underline">
             <span><%= username(@message.user) %></span>
+            <span class="ml-1 text-xs text-gray-500"><%= message_timestamp(@message) %></span>
           </.link>
           <p class="text-sm"><%= @message.body %></p>
         </div>
@@ -172,20 +171,17 @@ defmodule SlaxWeb.ChatRoomLive do
           Chat.get_first_room!()
       end
 
-      messages = Chat.list_messages_in_room(room)
+    messages = Chat.list_messages_in_room(room)
 
-      {:noreply,
-      socket
-      |> assign(
+    {:noreply,
+     socket
+     |> assign(
        hide_topic?: false,
        page_title: "#" <> room.name,
        room: room
-      )
-      |> stream(:messages, messages, reset: true)
-      |> assign_message_form(Chat.change_message(%Message{}))
-    }
-
-
+     )
+     |> stream(:messages, messages, reset: true)
+     |> assign_message_form(Chat.change_message(%Message{}))}
   end
 
   def handle_event("toggle-topic", _params, socket) do
@@ -221,5 +217,11 @@ defmodule SlaxWeb.ChatRoomLive do
 
   defp assign_message_form(socket, changeset) do
     assign(socket, :new_message_form, to_form(changeset))
+  end
+
+  defp message_timestamp(message) do
+    message.inserted_at
+    |> Timex.format!("%-l:%M %p", :strftime)
+
   end
 end
