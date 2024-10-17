@@ -50,4 +50,3 @@ for {user, message} <- [
     ] do
   Repo.insert!(%Message{user: user, room: room, body: message})
 end
-

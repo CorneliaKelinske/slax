@@ -10,7 +10,6 @@ defmodule Slax.Chat.Message do
     belongs_to :room, Room
     belongs_to :user, User
 
-
     timestamps(type: :utc_datetime)
   end
 
