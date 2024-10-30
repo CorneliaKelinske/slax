@@ -3,7 +3,6 @@ defmodule Slax.Accounts.User do
   import Ecto.Changeset
   alias Slax.Chat.{Room, RoomMembership}
 
-
   schema "users" do
     field :email, :string
     field :password, :string, virtual: true, redact: true
@@ -12,7 +11,6 @@ defmodule Slax.Accounts.User do
     field :confirmed_at, :utc_datetime
 
     many_to_many :rooms, Room, join_through: RoomMembership
-
 
     timestamps(type: :utc_datetime)
   end

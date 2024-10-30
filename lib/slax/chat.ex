@@ -19,6 +19,19 @@ defmodule Slax.Chat do
     Repo.all(from r in Room, order_by: [asc: :name])
   end
 
+  def list_joined_rooms(%User{} = user) do
+    user
+    |> Repo.preload(:rooms)
+    |> Map.fetch!(:rooms)
+    |> Enum.sort_by(& &1.name)
+  end
+
+  def joined?(%Room{} = room, %User{} = user) do
+    Repo.exists?(
+      from rm in RoomMembership, where: rm.room_id == ^room.id and rm.user_id == ^user.id
+    )
+  end
+
   def change_room(room, attrs \\ %{}) do
     Room.changeset(room, attrs)
   end
@@ -75,7 +88,6 @@ defmodule Slax.Chat do
   def join_room!(room, user) do
     Repo.insert!(%RoomMembership{room: room, user: user})
   end
-
 
   defp topic(room_id), do: "chat_room:#{room_id}"
 end

@@ -43,5 +43,4 @@ defmodule SlaxWeb.ChatRoomLive.Index do
     socket = socket |> assign(page_title: "All rooms") |> stream(:rooms, rooms)
     {:ok, socket}
   end
-
 end
