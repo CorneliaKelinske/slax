@@ -43,6 +43,4 @@ defmodule SlaxWeb.OnlineUsers do
       )
     end)
   end
-
-
 end
