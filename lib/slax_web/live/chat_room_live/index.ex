@@ -12,7 +12,7 @@ defmodule SlaxWeb.ChatRoomLive.Index do
       <div class="bg-slate-50 border rounded">
         <div id="rooms" class="divide-y" phx-update="stream">
           <div
-          :for={{id, {room, joined?}} <- @streams.rooms}
+            :for={{id, {room, _joined?}} <- @streams.rooms}
             class="cursor-pointer p-4 flex justify-between items-center group first:rounded-t last:rounded-b"
             id={id}
             phx-click={JS.navigate(~p"/rooms/#{room}")}
@@ -26,7 +26,7 @@ defmodule SlaxWeb.ChatRoomLive.Index do
                 </span>
               </div>
               <div class="text-gray-500 text-sm">
-              <% joined? = Chat.joined?(room, @current_user) %>
+                <% joined? = Chat.joined?(room, @current_user) %>
                 <%= if joined? do %>
                   <span class="text-green-600 font-bold">✓ Joined</span>
                 <% end %>
