@@ -18,10 +18,11 @@ defmodule SlaxWeb.ChatRoomLive do
       </div>
       <div class="mt-4 overflow-auto">
         <div class="flex items-center h-8 px-3 group">
-          <span class="ml-2 leading-none font-medium text-sm">Rooms</span>
+        <.toggler on_click={toggle_rooms()} dom_id="rooms-toggler" text="Rooms" />
+
         </div>
         <div id="rooms-list">
-        <.room_link
+          <.room_link
             :for={{room, unread_count} <- @rooms}
             room={room}
             active={room.id == @room.id}
@@ -47,7 +48,7 @@ defmodule SlaxWeb.ChatRoomLive do
         <div class="mt-4">
           <div class="flex items-center h-8 px-3 group">
             <div class="flex items-center flex-grow focus:outline-none">
-              <span class="ml-2 leading-none font-medium text-sm">Users</span>
+            <.toggler on_click={toggle_users()} dom_id="users-toggler" text="Users" />
             </div>
           </div>
           <div id="users-list">
@@ -238,7 +239,6 @@ defmodule SlaxWeb.ChatRoomLive do
   attr :room, Room, required: true
   attr :unread_count, :integer, required: true
 
-
   defp room_link(assigns) do
     ~H"""
     <.link
@@ -291,6 +291,42 @@ defmodule SlaxWeb.ChatRoomLive do
     """
   end
 
+  attr :dom_id, :string, required: true
+  attr :text, :string, required: true
+  attr :on_click, JS, required: true
+
+  defp toggler(assigns) do
+    ~H"""
+    <button id={@dom_id} phx-click={@on_click} class="flex items-center flex-grow focus:outline-none">
+
+      <.icon id={@dom_id <> "-chevron-down"} name="hero-chevron-down" class="h-4 w-4" />
+      <.icon
+        id={@dom_id <> "-chevron-right"}
+        name="hero-chevron-right"
+        class="h-4 w-4"
+        style="display:none;"
+      />
+      <span class="ml-2 leading-none font-medium text-sm">
+        <%= @text %>
+      </span>
+    </button>
+    """
+  end
+
+
+  defp toggle_rooms() do
+    JS.toggle(to: "#rooms-toggler-chevron-down")
+    |> JS.toggle(to: "#rooms-toggler-chevron-right")
+    |> JS.toggle(to: "#rooms-list")
+  end
+
+  defp toggle_users() do
+    JS.toggle(to: "#users-toggler-chevron-down")
+    |> JS.toggle(to: "#users-toggler-chevron-right")
+    |> JS.toggle(to: "#users-list")
+  end
+
+
   def mount(_params, _session, socket) do
     rooms = Chat.list_joined_rooms_with_unread_counts(socket.assigns.current_user)
     users = Accounts.list_users()
@@ -304,23 +340,21 @@ defmodule SlaxWeb.ChatRoomLive do
     OnlineUsers.subscribe()
     Enum.each(rooms, fn {chat, _} -> Chat.subscribe_to_room(chat) end)
 
-
     socket =
       socket
       |> assign(rooms: rooms, timezone: timezone, users: users)
       |> assign(online_users: OnlineUsers.list())
       |> stream_configure(:messages,
-      dom_id: fn
-        %Message{id: id} -> "messages-#{id}"
-        :unread_marker -> "messages-unread-marker"
-      end
-    )
+        dom_id: fn
+          %Message{id: id} -> "messages-#{id}"
+          :unread_marker -> "messages-unread-marker"
+        end
+      )
 
     {:ok, socket}
   end
 
   def handle_params(params, _session, socket) do
-
     room =
       case Map.fetch(params, "id") do
         {:ok, id} ->
@@ -330,7 +364,6 @@ defmodule SlaxWeb.ChatRoomLive do
           Chat.get_first_room!()
       end
 
-
     last_read_id = Chat.get_last_read_id(room, socket.assigns.current_user)
 
     messages =
@@ -338,8 +371,7 @@ defmodule SlaxWeb.ChatRoomLive do
       |> Chat.list_messages_in_room()
       |> maybe_insert_unread_marker(last_read_id)
 
-      Chat.update_last_read_id(room, socket.assigns.current_user)
-
+    Chat.update_last_read_id(room, socket.assigns.current_user)
 
     {:noreply,
      socket
@@ -353,13 +385,13 @@ defmodule SlaxWeb.ChatRoomLive do
      |> assign_message_form(Chat.change_message(%Message{}))
      |> push_event("scroll_messages_to_bottom", %{})
      |> update(:rooms, fn rooms ->
-      room_id = room.id
+       room_id = room.id
 
-      Enum.map(rooms, fn
-        {%Room{id: ^room_id} = room, _} -> {room, 0}
-        other -> other
-      end)
-    end)}
+       Enum.map(rooms, fn
+         {%Room{id: ^room_id} = room, _} -> {room, 0}
+         other -> other
+       end)
+     end)}
   end
 
   def handle_event("toggle-topic", _params, socket) do
@@ -401,8 +433,13 @@ defmodule SlaxWeb.ChatRoomLive do
     current_user = socket.assigns.current_user
     Chat.join_room!(socket.assigns.room, current_user)
     Chat.subscribe_to_room(socket.assigns.room)
-    socket = assign(socket, joined?: true, rooms: Chat.list_joined_rooms_with_unread_counts(current_user)
-    )
+
+    socket =
+      assign(socket,
+        joined?: true,
+        rooms: Chat.list_joined_rooms_with_unread_counts(current_user)
+      )
+
     {:noreply, socket}
   end
 
@@ -461,7 +498,9 @@ defmodule SlaxWeb.ChatRoomLive do
 
   defp maybe_insert_unread_marker(messages, last_read_id) do
     last_read_id |> IO.inspect(label: "415", limit: :infinity, charlists: false)
-    {read, unread} = Enum.split_while(messages, &(&1.id <= last_read_id)) |> IO.inspect(label: "415", limit: :infinity, charlists: false)
+
+    {read, unread} =
+      Enum.split_while(messages, &(&1.id <= last_read_id))
 
     if unread == [] do
       read

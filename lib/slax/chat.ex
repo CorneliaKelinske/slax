@@ -88,7 +88,6 @@ defmodule Slax.Chat do
     end
   end
 
-
   def change_room(room, attrs \\ %{}) do
     Room.changeset(room, attrs)
   end
