@@ -6,6 +6,8 @@ defmodule SlaxWeb.ChatRoomLive do
   alias Slax.Chat.{Message, Room}
   alias SlaxWeb.OnlineUsers
 
+  import SlaxWeb.RoomComponents
+
   def render(assigns) do
     ~H"""
     <div class="flex flex-col flex-shrink-0 w-64 bg-slate-100">
@@ -18,8 +20,7 @@ defmodule SlaxWeb.ChatRoomLive do
       </div>
       <div class="mt-4 overflow-auto">
         <div class="flex items-center h-8 px-3 group">
-        <.toggler on_click={toggle_rooms()} dom_id="rooms-toggler" text="Rooms" />
-
+          <.toggler on_click={toggle_rooms()} dom_id="rooms-toggler" text="Rooms" />
         </div>
         <div id="rooms-list">
           <.room_link
@@ -32,11 +33,11 @@ defmodule SlaxWeb.ChatRoomLive do
             <.icon name="hero-plus" class="h-4 w-4 relative top-px" />
             <span class="ml-2 leading-none">Add rooms</span>
             <div class="hidden group-focus:block cursor-default absolute top-8 right-2 bg-white border-slate-200 border py-3 rounded-lg">
-              <div class="w-full text-left"> <div class="hover:bg-sky-600">
+              <div class="w-full text-left">
+                <div class="hover:bg-sky-600">
                   <div
                     class="cursor-pointer whitespace-nowrap text-gray-800 hover:text-white px-6 py-1 block"
                     phx-click={JS.navigate(~p"/rooms/#{@room}/new") |> show_modal("new-room-modal")}
-
                   >
                     Create a new room
                   </div>
@@ -56,7 +57,7 @@ defmodule SlaxWeb.ChatRoomLive do
         <div class="mt-4">
           <div class="flex items-center h-8 px-3 group">
             <div class="flex items-center flex-grow focus:outline-none">
-            <.toggler on_click={toggle_users()} dom_id="users-toggler" text="Users" />
+              <.toggler on_click={toggle_users()} dom_id="users-toggler" text="Users" />
             </div>
           </div>
           <div id="users-list">
@@ -209,20 +210,13 @@ defmodule SlaxWeb.ChatRoomLive do
         </div>
       </div>
     </div>
-    <.modal id="new-room-modal" show={@live_action == :new} on_cancel={JS.navigate(~p"/rooms/#{@room}")}>
+    <.modal
+      id="new-room-modal"
+      show={@live_action == :new}
+      on_cancel={JS.navigate(~p"/rooms/#{@room}")}
+    >
       <.header>New chat room</.header>
-      <.simple_form
-        for={@new_room_form}
-        id="room-form"
-        phx-change="validate-room"
-        phx-submit="save-room"
-      >
-        <.input field={@new_room_form[:name]} type="text" label="Name" phx-debounce />
-        <.input field={@new_room_form[:topic]} type="text" label="Topic" phx-debounce />
-        <:actions>
-          <.button phx-disable-with="Saving..." class="w-full">Save</.button>
-        </:actions>
-      </.simple_form>
+      <.room_form form={@new_room_form} />
     </.modal>
     """
   end
@@ -321,7 +315,6 @@ defmodule SlaxWeb.ChatRoomLive do
   defp toggler(assigns) do
     ~H"""
     <button id={@dom_id} phx-click={@on_click} class="flex items-center flex-grow focus:outline-none">
-
       <.icon id={@dom_id <> "-chevron-down"} name="hero-chevron-down" class="h-4 w-4" />
       <.icon
         id={@dom_id <> "-chevron-right"}
@@ -336,7 +329,6 @@ defmodule SlaxWeb.ChatRoomLive do
     """
   end
 
-
   defp toggle_rooms() do
     JS.toggle(to: "#rooms-toggler-chevron-down")
     |> JS.toggle(to: "#rooms-toggler-chevron-right")
@@ -348,7 +340,6 @@ defmodule SlaxWeb.ChatRoomLive do
     |> JS.toggle(to: "#users-toggler-chevron-right")
     |> JS.toggle(to: "#users-list")
   end
-
 
   def mount(_params, _session, socket) do
     rooms = Chat.list_joined_rooms_with_unread_counts(socket.assigns.current_user)
@@ -490,7 +481,6 @@ defmodule SlaxWeb.ChatRoomLive do
         {:noreply, assign_room_form(socket, changeset)}
     end
   end
-
 
   def handle_info({:new_message, message}, socket) do
     room = socket.assigns.room
