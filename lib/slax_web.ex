@@ -53,6 +53,8 @@ defmodule SlaxWeb do
     quote do
       use Phoenix.LiveView,
         layout: {SlaxWeb.Layouts, :app}
+      import SlaxWeb.SocketHelpers
+
 
       unquote(html_helpers())
     end
