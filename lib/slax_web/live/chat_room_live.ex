@@ -95,7 +95,7 @@ defmodule SlaxWeb.ChatRoomLive do
         <ul class="relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
           <%= if @current_user do %>
             <li class="text-[0.8125rem] leading-6 text-zinc-900">
-              <%= username(@current_user) %>
+              <%= @current_user.username %>
             </li>
             <li>
               <.link
@@ -247,7 +247,7 @@ defmodule SlaxWeb.ChatRoomLive do
           <span class="w-2 h-2 rounded-full border-2 border-gray-500"></span>
         <% end %>
       </div>
-      <span class="ml-2 leading-none"><%= username(@user) %></span>
+      <span class="ml-2 leading-none"><%= @user.username %></span>
     </.link>
     """
   end
@@ -296,7 +296,7 @@ defmodule SlaxWeb.ChatRoomLive do
       <div class="ml-2">
         <div class="-mt-1">
           <.link class="text-sm font-semibold hover:underline">
-            <span><%= username(@message.user) %></span>
+            <span><%= @message.user.username %></span>
             <span :if={@timezone} class="ml-1 text-xs text-gray-500">
               <%= message_timestamp(@message, @timezone) %>
             </span>
@@ -387,24 +387,24 @@ defmodule SlaxWeb.ChatRoomLive do
     Chat.update_last_read_id(room, socket.assigns.current_user)
 
     socket
-   |> assign(
-     hide_topic?: false,
-     joined?: Chat.joined?(room, socket.assigns.current_user),
-     page_title: "#" <> room.name,
-     room: room
-   )
-   |> stream(:messages, messages, reset: true)
-   |> assign_message_form(Chat.change_message(%Message{}))
-   |> push_event("scroll_messages_to_bottom", %{})
-   |> update(:rooms, fn rooms ->
-     room_id = room.id
+    |> assign(
+      hide_topic?: false,
+      joined?: Chat.joined?(room, socket.assigns.current_user),
+      page_title: "#" <> room.name,
+      room: room
+    )
+    |> stream(:messages, messages, reset: true)
+    |> assign_message_form(Chat.change_message(%Message{}))
+    |> push_event("scroll_messages_to_bottom", %{})
+    |> update(:rooms, fn rooms ->
+      room_id = room.id
 
-     Enum.map(rooms, fn
-       {%Room{id: ^room_id} = room, _} -> {room, 0}
-       other -> other
-     end)
-   end)
-   |> noreply()
+      Enum.map(rooms, fn
+        {%Room{id: ^room_id} = room, _} -> {room, 0}
+        other -> other
+      end)
+    end)
+    |> noreply()
   end
 
   def handle_event("toggle-topic", _params, socket) do
@@ -515,10 +515,6 @@ defmodule SlaxWeb.ChatRoomLive do
     online_users = OnlineUsers.update(socket.assigns.online_users, diff)
 
     {:noreply, assign(socket, online_users: online_users)}
-  end
-
-  defp username(user) do
-    user.email |> String.split("@") |> List.first() |> String.capitalize()
   end
 
   defp assign_message_form(socket, changeset) do
