@@ -73,8 +73,8 @@ defmodule SlaxWeb.ChatRoomLive.Index do
       |> Chat.get_room!()
       |> Chat.toggle_room_membership(socket.assigns.current_user)
 
-      socket
-      |> stream_insert(:rooms, {room, joined?})
-      |> noreply()
+    socket
+    |> stream_insert(:rooms, {room, joined?})
+    |> noreply()
   end
 end
