@@ -534,8 +534,6 @@ defmodule SlaxWeb.ChatRoomLive do
   defp maybe_insert_unread_marker(messages, nil), do: messages
 
   defp maybe_insert_unread_marker(messages, last_read_id) do
-    last_read_id |> IO.inspect(label: "415", limit: :infinity, charlists: false)
-
     {read, unread} =
       Enum.split_while(messages, &(&1.id <= last_read_id))
 
