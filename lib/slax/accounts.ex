@@ -27,14 +27,14 @@ defmodule Slax.Accounts do
   end
 
   def get_authenticated_user(email_or_username, password)
-  when is_binary(email_or_username) and is_binary(password) do
-user =
-  User
-  |> where([u], u.email == ^email_or_username or u.username == ^email_or_username)
-  |> Repo.one()
+      when is_binary(email_or_username) and is_binary(password) do
+    user =
+      User
+      |> where([u], u.email == ^email_or_username or u.username == ^email_or_username)
+      |> Repo.one()
 
-if User.valid_password?(user, password), do: user
-end
+    if User.valid_password?(user, password), do: user
+  end
 
   @doc """
   Gets a single user.
