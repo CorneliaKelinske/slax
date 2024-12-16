@@ -30,7 +30,7 @@ defmodule SlaxWeb.UserAuth do
     user_return_to = get_session(conn, :user_return_to)
 
     conn
-    |> renew_session()
+    |> renew_session() 
     |> put_token_in_session(token)
     |> maybe_write_remember_me_cookie(token, params)
     |> redirect(to: user_return_to || signed_in_path(conn))
