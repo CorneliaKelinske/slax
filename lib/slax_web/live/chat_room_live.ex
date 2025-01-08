@@ -23,37 +23,44 @@ defmodule SlaxWeb.ChatRoomLive do
           <.toggler on_click={toggle_rooms()} dom_id="rooms-toggler" text="Rooms" />
         </div>
         <div id="rooms-list">
-          <.room_link
-            :for={{room, unread_count} <- @rooms}
-            room={room}
-            active={room.id == @room.id}
-            unread_count={unread_count}
-          />
-          <button class="group relative flex items-center h-8 text-sm pl-8 pr-3 hover:bg-slate-300 cursor-pointer w-full">
-            <.icon name="hero-plus" class="h-4 w-4 relative top-px" />
-            <span class="ml-2 leading-none">Add rooms</span>
-            <div class="hidden group-focus:block cursor-default absolute top-8 right-2 bg-white border-slate-200 border py-3 rounded-lg">
-              <div class="w-full text-left">
-                <div class="hover:bg-sky-600">
-                  <div
-                    class="cursor-pointer whitespace-nowrap text-gray-800 hover:text-white px-6 py-1 block"
-                    phx-click={JS.navigate(~p"/rooms/#{@room}/new") |> show_modal("new-room-modal")}
-                  >
-                    Create a new room
-                  </div>
-                </div>
-                <div class="hover:bg-sky-600">
-                  <div
-                    phx-click={JS.navigate(~p"/rooms")}
-                    class="cursor-pointer whitespace-nowrap text-gray-800 hover:text-white px-6 py-1"
-                  >
-                    Browse rooms
-                  </div>
-                </div>
-              </div>
-            </div>
-          </button>
-        </div>
+         <.room_link
+           :for={{room, unread_count} <- @rooms}
+           room={room}
+           active={room.id == @room.id}
+           unread_count={unread_count}
+         />
+
+         <div class="relative">
+           <button
+             class="flex items-center peer h-8 text-sm pl-8 pr-3 hover:bg-slate-300 cursor-pointer w-full"
+             phx-click={JS.toggle(to: "#sidebar-rooms-menu")}
+           >
+             <.icon name="hero-plus" class="h-4 w-4 relative top-px" />
+             <span class="ml-2 leading-none">Add rooms</span>
+           </button>
+
+           <div
+             id="sidebar-rooms-menu"
+             class="hidden cursor-default absolute top-8 right-2 bg-white border-slate-200 border py-3 rounded-lg"
+             phx-click-away={JS.hide()}
+           >
+             <div class="w-full text-left">
+               <.link
+                 class="block select-none cursor-pointer whitespace-nowrap text-gray-800 hover:text-white px-6 py-1 block hover:bg-sky-600"
+                 navigate={~p"/rooms"}
+               >
+                 Browse rooms
+               </.link>
+               <.link
+                 class="block select-none cursor-pointer whitespace-nowrap text-gray-800 hover:text-white px-6 py-1 block hover:bg-sky-600"
+                 navigate={~p"/rooms/#{@room}/new"}
+               >
+                 Create a new room
+               </.link>
+             </div>
+           </div>
+         </div>
+       </div>
         <div class="mt-4">
           <div class="flex items-center h-8 px-3 group">
             <div class="flex items-center flex-grow focus:outline-none">
@@ -142,7 +149,7 @@ defmodule SlaxWeb.ChatRoomLive do
         phx-update="stream"
       >
         <%= for {dom_id, message} <- @streams.messages do %>
-        <%= case message do %>
+          <%= case message do %>
             <% :unread_marker -> %>
               <div id={dom_id} class="w-full flex text-red-500 items-center gap-3 pr-5">
                 <div class="w-full h-px grow bg-red-500"></div>
@@ -253,7 +260,7 @@ defmodule SlaxWeb.ChatRoomLive do
       true -> "th"
     end
   end
-  
+
   attr :count, :integer, required: true
 
   defp unread_message_counter(assigns) do
@@ -574,6 +581,7 @@ defmodule SlaxWeb.ChatRoomLive do
         %Message{} = message -> message.id <= last_read_id
         _ -> true
       end)
+
     if unread == [] do
       read
     else
@@ -593,5 +601,4 @@ defmodule SlaxWeb.ChatRoomLive do
     |> Enum.sort_by(fn {date, _msgs} -> date end, &(Date.compare(&1, &2) != :gt))
     |> Enum.flat_map(fn {date, messages} -> [date | messages] end)
   end
-
 end
