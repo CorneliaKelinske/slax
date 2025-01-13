@@ -6,8 +6,6 @@ defmodule SlaxWeb.ChatRoomLive do
   alias Slax.Chat.{Message, Room}
   alias SlaxWeb.OnlineUsers
 
-  import SlaxWeb.RoomComponents
-
   def render(assigns) do
     ~H"""
     <div class="flex flex-col flex-shrink-0 w-64 bg-slate-100">
@@ -23,44 +21,44 @@ defmodule SlaxWeb.ChatRoomLive do
           <.toggler on_click={toggle_rooms()} dom_id="rooms-toggler" text="Rooms" />
         </div>
         <div id="rooms-list">
-         <.room_link
-           :for={{room, unread_count} <- @rooms}
-           room={room}
-           active={room.id == @room.id}
-           unread_count={unread_count}
-         />
+          <.room_link
+            :for={{room, unread_count} <- @rooms}
+            room={room}
+            active={room.id == @room.id}
+            unread_count={unread_count}
+          />
 
-         <div class="relative">
-           <button
-             class="flex items-center peer h-8 text-sm pl-8 pr-3 hover:bg-slate-300 cursor-pointer w-full"
-             phx-click={JS.toggle(to: "#sidebar-rooms-menu")}
-           >
-             <.icon name="hero-plus" class="h-4 w-4 relative top-px" />
-             <span class="ml-2 leading-none">Add rooms</span>
-           </button>
+          <div class="relative">
+            <button
+              class="flex items-center peer h-8 text-sm pl-8 pr-3 hover:bg-slate-300 cursor-pointer w-full"
+              phx-click={JS.toggle(to: "#sidebar-rooms-menu")}
+            >
+              <.icon name="hero-plus" class="h-4 w-4 relative top-px" />
+              <span class="ml-2 leading-none">Add rooms</span>
+            </button>
 
-           <div
-             id="sidebar-rooms-menu"
-             class="hidden cursor-default absolute top-8 right-2 bg-white border-slate-200 border py-3 rounded-lg"
-             phx-click-away={JS.hide()}
-           >
-             <div class="w-full text-left">
-               <.link
-                 class="block select-none cursor-pointer whitespace-nowrap text-gray-800 hover:text-white px-6 py-1 block hover:bg-sky-600"
-                 navigate={~p"/rooms"}
-               >
-                 Browse rooms
-               </.link>
-               <.link
-                 class="block select-none cursor-pointer whitespace-nowrap text-gray-800 hover:text-white px-6 py-1 block hover:bg-sky-600"
-                 navigate={~p"/rooms/#{@room}/new"}
-               >
-                 Create a new room
-               </.link>
-             </div>
-           </div>
-         </div>
-       </div>
+            <div
+              id="sidebar-rooms-menu"
+              class="hidden cursor-default absolute top-8 right-2 bg-white border-slate-200 border py-3 rounded-lg"
+              phx-click-away={JS.hide()}
+            >
+              <div class="w-full text-left">
+                <.link
+                  class="block select-none cursor-pointer whitespace-nowrap text-gray-800 hover:text-white px-6 py-1 block hover:bg-sky-600"
+                  navigate={~p"/rooms"}
+                >
+                  Browse rooms
+                </.link>
+                <.link
+                  class="block select-none cursor-pointer whitespace-nowrap text-gray-800 hover:text-white px-6 py-1 block hover:bg-sky-600"
+                  navigate={~p"/rooms/#{@room}/new"}
+                >
+                  Create a new room
+                </.link>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="mt-4">
           <div class="flex items-center h-8 px-3 group">
             <div class="flex items-center flex-grow focus:outline-none">
@@ -231,7 +229,11 @@ defmodule SlaxWeb.ChatRoomLive do
       on_cancel={JS.navigate(~p"/rooms/#{@room}")}
     >
       <.header>New chat room</.header>
-      <.room_form form={@new_room_form} />
+      <.live_component
+        module={SlaxWeb.ChatRoomLive.FormComponent}
+        id="new-room-form-component"
+        current_user={@current_user}
+      />
     </.modal>
     """
   end
@@ -397,7 +399,6 @@ defmodule SlaxWeb.ChatRoomLive do
     socket
     |> assign(rooms: rooms, timezone: timezone, users: users)
     |> assign(online_users: OnlineUsers.list())
-    |> assign_room_form(Chat.change_room(%Room{}))
     |> stream_configure(:messages,
       dom_id: fn
         %Message{id: id} -> "messages-#{id}"
@@ -498,30 +499,6 @@ defmodule SlaxWeb.ChatRoomLive do
     {:noreply, socket}
   end
 
-  def handle_event("validate-room", %{"room" => room_params}, socket) do
-    changeset =
-      socket.assigns.room
-      |> Chat.change_room(room_params)
-      |> Map.put(:action, :validate)
-
-    {:noreply, assign_room_form(socket, changeset)}
-  end
-
-  def handle_event("save-room", %{"room" => room_params}, socket) do
-    case Chat.create_room(room_params) do
-      {:ok, room} ->
-        Chat.join_room!(room, socket.assigns.current_user)
-
-        {:noreply,
-         socket
-         |> put_flash(:info, "Created room")
-         |> push_navigate(to: ~p"/rooms/#{room}")}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign_room_form(socket, changeset)}
-    end
-  end
-
   def handle_info({:new_message, message}, socket) do
     room = socket.assigns.room
 
@@ -561,10 +538,6 @@ defmodule SlaxWeb.ChatRoomLive do
 
   defp assign_message_form(socket, changeset) do
     assign(socket, :new_message_form, to_form(changeset))
-  end
-
-  defp assign_room_form(socket, changeset) do
-    assign(socket, :new_room_form, to_form(changeset))
   end
 
   defp message_timestamp(message, timezone) do

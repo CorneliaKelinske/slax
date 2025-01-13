@@ -4,19 +4,18 @@ defmodule SlaxWeb.ChatRoomLive.Index do
   alias Slax.Chat
 
   def render(assigns) do
-     ~H"""
+    ~H"""
     <main class="flex-1 p-6 max-w-4xl mx-auto">
-      <div class="mb-4">
-        <div class="flex justify-between mb-4 items-center">
-          <h1 class="text-xl font-semibold"><%= @page_title %></h1>
-          <button
-            phx-click={show_modal("new-room-modal")}
-            class="bg-white font-semibold py-2 px-4 border border-slate-400 rounded shadow-sm hover:bg-gray-100"
-          >
-            Create room
-          </button>
-        </div>
+      <div class="flex justify-between mb-4 items-center">
+        <h1 class="text-xl font-semibold"><%= @page_title %></h1>
+        <button
+          phx-click={show_modal("new-room-modal")}
+          class="bg-white font-semibold py-2 px-4 border border-slate-400 rounded shadow-sm hover:bg-gray-100"
+        >
+          Create room
+        </button>
       </div>
+
       <div class="bg-slate-50 border rounded">
         <div id="rooms" class="divide-y" phx-update="stream">
           <.link
@@ -59,42 +58,6 @@ defmodule SlaxWeb.ChatRoomLive.Index do
           </.link>
         </div>
       </div>
-
-      <div :if={@num_pages > 1} class="py-4">
-        <nav class="flex justify-around">
-          <ul class="flex items-center -space-x-px h-10 text-base">
-            <li>
-              <.link
-                patch={
-                  if @page == 1 do
-                    ""
-                  else
-                    ~p"/rooms?page=#{@page - 1}"
-                  end
-                }
-                class="flex items-center justify-center px-4 h-10 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700"
-              >
-                <span class="sr-only">Previous</span> &lsaquo;
-              </.link>
-            </li>
-            <.page_number :for={i <- 1..@num_pages} number={i} current?={i == @page} />
-            <li>
-              <.link
-                patch={
-                  if @page + 1 > @num_pages do
-                    ""
-                  else
-                    ~p"/rooms?page=#{@page + 1}"
-                  end
-                }
-                class="flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700"
-              >
-                <span class="sr-only">Next</span> &rsaquo;
-              </.link>
-            </li>
-          </ul>
-        </nav>
-      </div>
     </main>
 
     <.modal id="new-room-modal">
@@ -107,13 +70,13 @@ defmodule SlaxWeb.ChatRoomLive.Index do
       />
     </.modal>
     """
-   end
+  end
 
   attr :number, :any, required: true
   attr :current?, :boolean, default: false
 
   defp page_number(assigns) do
-     ~H"""
+    ~H"""
     <li>
       <.link
         patch={~p"/rooms?page=#{@number}"}
@@ -130,11 +93,10 @@ defmodule SlaxWeb.ChatRoomLive.Index do
       </.link>
     </li>
     """
-   end
+  end
 
   def mount(_params, _session, socket) do
     socket
-
     |> assign(:page_title, "All rooms")
     |> stream_configure(:rooms, dom_id: fn {room, _} -> "rooms-#{room.id}" end)
     |> ok()
