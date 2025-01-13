@@ -134,7 +134,7 @@ defmodule SlaxWeb.ChatRoomLive.Index do
 
   def mount(_params, _session, socket) do
     socket
-    |> assign(num_pages: Chat.count_room_pages())
+
     |> assign(:page_title, "All rooms")
     |> stream_configure(:rooms, dom_id: fn {room, _} -> "rooms-#{room.id}" end)
     |> ok()
@@ -143,7 +143,7 @@ defmodule SlaxWeb.ChatRoomLive.Index do
   def handle_params(params, _session, socket) do
     page = params |> Map.get("page", "1") |> String.to_integer()
 
-    rooms = Chat.list_rooms_with_joined(page, socket.assigns.current_user)
+    rooms = Chat.list_rooms_with_joined(socket.assigns.current_user)
 
     socket
     |> assign(page: page)
