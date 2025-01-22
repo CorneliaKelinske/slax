@@ -9,7 +9,7 @@ defmodule SlaxWeb.ChatRoomLive.Edit do
     ~H"""
     <div class="mx-auto w-96 mt-12">
       <.header>
-        <%= @page_title %>
+        {@page_title}
         <:actions>
           <.link
             class="font-normal text-xs text-blue-600 hover:text-blue-700"

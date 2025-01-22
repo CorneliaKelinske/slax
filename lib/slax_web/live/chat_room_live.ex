@@ -1,5 +1,6 @@
 defmodule SlaxWeb.ChatRoomLive do
   use SlaxWeb, :live_view
+  import SlaxWeb.UserComponents
   alias Slax.Accounts
   alias Slax.Accounts.User
   alias Slax.Chat
@@ -79,7 +80,7 @@ defmodule SlaxWeb.ChatRoomLive do
       <div class="flex justify-between items-center flex-shrink-0 h-16 bg-white border-b border-slate-300 px-4">
         <div class="flex flex-col gap-1.5">
           <h1 class="text-sm font-bold leading-none">
-            #<%= @room.name %>
+            #{@room.name}
 
             <.link
               :if={@joined?}
@@ -93,23 +94,24 @@ defmodule SlaxWeb.ChatRoomLive do
             <%= if @hide_topic? do %>
               <span class="text-slate-600">[Topic hidden]</span>
             <% else %>
-              <%= @room.topic %>
+              {@room.topic}
             <% end %>
           </div>
         </div>
         <ul class="relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
           <%= if @current_user do %>
             <li class="text-[0.8125rem] leading-6 text-zinc-900">
-            <div class="text-sm leading-10">
-             <.link
-               class="flex gap-4 items-center"
-               phx-click="show-profile"
-               phx-value-user-id={@current_user.id}
-             >
-               <img src={~p"/images/one_ring.jpg"} class="h-8 w-8 rounded" />
-               <span class="hover:underline">{@current_user.username}</span>
-             </.link>
-           </div>
+              <div class="text-sm leading-10">
+                <.link
+                  class="flex gap-4 items-center"
+                  phx-click="show-profile"
+                  phx-value-user-id={@current_user.id}
+                >
+                  <.user_avatar user={@current_user} class="h-8 w-8 rounded" />
+
+                  <span class="hover:underline">{@current_user.username}</span>
+                </.link>
+              </div>
             </li>
             <li>
               <.link
@@ -173,7 +175,7 @@ defmodule SlaxWeb.ChatRoomLive do
               <div id={dom_id} class="flex flex-col items-center mt-2">
                 <hr class="w-full" />
                 <span class="flex items-center justify-center -mt-3 bg-white h-6 px-3 rounded-full border text-xs font-semibold mx-auto">
-                  <%= format_date(message) %>
+                  {format_date(message)}
                 </span>
               </div>
           <% end %>
@@ -209,8 +211,8 @@ defmodule SlaxWeb.ChatRoomLive do
       >
         <div class="max-w-3-xl text-center">
           <div class="mb-4">
-            <h1 class="text-xl font-semibold">#<%= @room.name %></h1>
-            <p :if={@room.topic} class="text-sm mt-1 text-gray-600"><%= @room.topic %></p>
+            <h1 class="text-xl font-semibold">#{@room.name}</h1>
+            <p :if={@room.topic} class="text-sm mt-1 text-gray-600">{@room.topic}</p>
           </div>
           <div class="flex items-center justify-around">
             <button
@@ -283,7 +285,7 @@ defmodule SlaxWeb.ChatRoomLive do
       :if={@count > 0}
       class="flex items-center justify-center bg-blue-500 rounded-full font-medium h-5 px-2 ml-auto text-xs text-white"
     >
-      <%= @count %>
+      {@count}
     </span>
     """
   end
@@ -301,7 +303,7 @@ defmodule SlaxWeb.ChatRoomLive do
           <span class="w-2 h-2 rounded-full border-2 border-gray-500"></span>
         <% end %>
       </div>
-      <span class="ml-2 leading-none"><%= @user.username %></span>
+      <span class="ml-2 leading-none">{@user.username}</span>
     </.link>
     """
   end
@@ -321,7 +323,7 @@ defmodule SlaxWeb.ChatRoomLive do
     >
       <.icon name="hero-hashtag" class="h-4 w-4" />
       <span class={["ml-2 leading-none", @active && "font-bold"]}>
-        <%= @room.name %>
+        {@room.name}
       </span>
     </.link>
     """
@@ -346,26 +348,26 @@ defmodule SlaxWeb.ChatRoomLive do
         <.icon name="hero-trash" class="h-4 w-4" />
       </button>
 
-      <img
+      <.user_avatar
+        user={@message.user}
+
         class="h-10 w-10 rounded cursor-pointer"
         phx-click="show-profile"
         phx-value-user-id={@message.user.id}
-        src={user_avatar_path(@message.user)}
-
       />
       <div class="ml-2">
         <div class="-mt-1">
-        <.link
+          <.link
             phx-click="show-profile"
             phx-value-user-id={@message.user.id}
             class="text-sm font-semibold hover:underline"
           >
             {@message.user.username}
             <span :if={@timezone} class="ml-1 text-xs text-gray-500">
-              <%= message_timestamp(@message, @timezone) %>
+              {message_timestamp(@message, @timezone)}
             </span>
           </.link>
-          <p class="text-sm"><%= @message.body %></p>
+          <p class="text-sm">{@message.body}</p>
         </div>
       </div>
     </div>
@@ -387,7 +389,7 @@ defmodule SlaxWeb.ChatRoomLive do
         style="display:none;"
       />
       <span class="ml-2 leading-none font-medium text-sm">
-        <%= @text %>
+        {@text}
       </span>
     </button>
     """
@@ -403,14 +405,6 @@ defmodule SlaxWeb.ChatRoomLive do
     JS.toggle(to: "#users-toggler-chevron-down")
     |> JS.toggle(to: "#users-toggler-chevron-right")
     |> JS.toggle(to: "#users-list")
-  end
-
-  defp user_avatar_path(user) do
-    if user.avatar_path do
-      ~p"/uploads/#{user.avatar_path}" |> IO.inspect(label: "410", limit: :infinity, charlists: false)
-    else
-      ~p"/images/one_ring.jpg"
-    end
   end
 
 
@@ -480,7 +474,6 @@ defmodule SlaxWeb.ChatRoomLive do
     end)
     |> noreply()
   end
-
 
   def handle_event("show-profile", %{"user-id" => user_id}, socket) do
     user = Accounts.get_user!(user_id)

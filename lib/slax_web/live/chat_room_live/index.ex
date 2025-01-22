@@ -7,7 +7,7 @@ defmodule SlaxWeb.ChatRoomLive.Index do
     ~H"""
     <main class="flex-1 p-6 max-w-4xl mx-auto">
       <div class="flex justify-between mb-4 items-center">
-        <h1 class="text-xl font-semibold"><%= @page_title %></h1>
+        <h1 class="text-xl font-semibold">{@page_title}</h1>
         <button
           phx-click={show_modal("new-room-modal")}
           class="bg-white font-semibold py-2 px-4 border border-slate-400 rounded shadow-sm hover:bg-gray-100"
@@ -26,7 +26,7 @@ defmodule SlaxWeb.ChatRoomLive.Index do
           >
             <div>
               <div class="font-medium mb-1">
-                #<%= room.name %>
+                #{room.name}
                 <span class="mx-1 text-gray-500 font-light text-sm hidden group-hover:inline group-focus:inline">
                   View room
                 </span>
@@ -39,7 +39,7 @@ defmodule SlaxWeb.ChatRoomLive.Index do
                   <span class="mx-1">·</span>
                 <% end %>
                 <%= if room.topic do %>
-                  <%= room.topic %>
+                  {room.topic}
                 <% end %>
               </div>
             </div>
@@ -89,7 +89,7 @@ defmodule SlaxWeb.ChatRoomLive.Index do
           end
         ]}
       >
-        <%= @number %>
+        {@number}
       </.link>
     </li>
     """
