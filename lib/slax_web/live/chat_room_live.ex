@@ -235,7 +235,12 @@ defmodule SlaxWeb.ChatRoomLive do
       </div>
     </div>
     <%= if assigns[:profile] do %>
-      <.live_component id="profile" module={SlaxWeb.ChatRoomLive.ProfileComponent} user={@profile} />
+      <.live_component
+        id="profile"
+        module={SlaxWeb.ChatRoomLive.ProfileComponent}
+        user={@profile}
+        current_user={@current_user}
+      />
     <% end %>
     <.modal
       id="new-room-modal"
@@ -350,7 +355,6 @@ defmodule SlaxWeb.ChatRoomLive do
 
       <.user_avatar
         user={@message.user}
-
         class="h-10 w-10 rounded cursor-pointer"
         phx-click="show-profile"
         phx-value-user-id={@message.user.id}
@@ -407,7 +411,6 @@ defmodule SlaxWeb.ChatRoomLive do
     |> JS.toggle(to: "#users-list")
   end
 
-
   def mount(_params, _session, socket) do
     rooms = Chat.list_joined_rooms_with_unread_counts(socket.assigns.current_user)
     users = Accounts.list_users()
@@ -419,6 +422,7 @@ defmodule SlaxWeb.ChatRoomLive do
     end
 
     OnlineUsers.subscribe()
+    Accounts.subscribe_to_user_avatars()
     Enum.each(rooms, fn {chat, _} -> Chat.subscribe_to_room(chat) end)
 
     socket
@@ -532,6 +536,31 @@ defmodule SlaxWeb.ChatRoomLive do
 
     {:noreply, socket}
   end
+
+  def handle_info({:updated_avatar, user}, socket) do
+    socket
+    |> maybe_update_profile(user)
+    |> maybe_update_current_user(user)
+    |> push_event("update_avatar", %{user_id: user.id, avatar_path: user.avatar_path})
+    |> noreply()
+  end
+
+  defp maybe_update_current_user(socket, user) do
+    if socket.assigns.current_user.id == user.id do
+      assign(socket, :current_user, user)
+    else
+      socket
+    end
+  end
+
+  defp maybe_update_profile(socket, user) do
+    if socket.assigns[:profile] && socket.assigns.profile.id == user.id do
+      assign(socket, :profile, user)
+    else
+      socket
+    end
+  end
+
 
   def handle_info({:new_message, message}, socket) do
     room = socket.assigns.room
