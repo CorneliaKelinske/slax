@@ -1,5 +1,6 @@
 defmodule SlaxWeb.ChatRoomLive.ProfileComponent do
   use SlaxWeb, :live_component
+  import SlaxWeb.UserComponents
 
   def render(assigns) do
     ~H"""
@@ -19,7 +20,7 @@ defmodule SlaxWeb.ChatRoomLive.ProfileComponent do
       </button>
       <div class="flex flex-col grow overflow-auto p-4">
         <div class="mb-4">
-          <img src={~p"/images/one_ring.jpg"} class="w-48 rounded mx-auto" />
+          <.user_avatar user={@user} class="w-48 rounded mx-auto" />
         </div>
         <h2 class="text-xl font-bold text-gray-800">
           {@user.username}
