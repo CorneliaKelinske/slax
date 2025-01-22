@@ -350,7 +350,8 @@ defmodule SlaxWeb.ChatRoomLive do
         class="h-10 w-10 rounded cursor-pointer"
         phx-click="show-profile"
         phx-value-user-id={@message.user.id}
-        src={~p"/images/one_ring.jpg"}
+        src={user_avatar_path(@message.user)}
+
       />
       <div class="ml-2">
         <div class="-mt-1">
@@ -403,6 +404,15 @@ defmodule SlaxWeb.ChatRoomLive do
     |> JS.toggle(to: "#users-toggler-chevron-right")
     |> JS.toggle(to: "#users-list")
   end
+
+  defp user_avatar_path(user) do
+    if user.avatar_path do
+      ~p"/uploads/#{user.avatar_path}" |> IO.inspect(label: "410", limit: :infinity, charlists: false)
+    else
+      ~p"/images/one_ring.jpg"
+    end
+  end
+
 
   def mount(_params, _session, socket) do
     rooms = Chat.list_joined_rooms_with_unread_counts(socket.assigns.current_user)
