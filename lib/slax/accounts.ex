@@ -369,6 +369,4 @@ defmodule Slax.Accounts do
   def subscribe_to_user_avatars do
     Phoenix.PubSub.subscribe(@pubsub, @user_avatar_topic)
   end
-
-
 end
