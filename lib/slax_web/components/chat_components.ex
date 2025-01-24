@@ -34,6 +34,7 @@ defmodule SlaxWeb.ChatComponents do
           data-confirm="Are you sure?"
           phx-click="delete-message"
           phx-value-id={@message.id}
+          phx-value-type={@message.__struct__ |> Module.split() |> List.last()}
         >
           <.icon name="hero-trash" class="h-4 w-4" />
         </button>
@@ -93,7 +94,7 @@ defmodule SlaxWeb.ChatComponents do
     <.user_avatar :for={user <- @users} class="h-6 w-6 rounded shrink-0 ml-1" user={user} />
     """
   end
-  
+
   defp message_timestamp(message, timezone) do
     message.inserted_at
     |> Timex.Timezone.convert(timezone)
