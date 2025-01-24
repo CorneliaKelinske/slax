@@ -2,8 +2,6 @@ defmodule SlaxWeb.ChatComponents do
   use SlaxWeb, :html
 
   alias Slax.Accounts.User
-  alias Slax.Chat.Message
-
   import SlaxWeb.UserComponents
 
   attr :current_user, User, required: true
@@ -75,12 +73,10 @@ defmodule SlaxWeb.ChatComponents do
             </a>
           </div>
         </div>
-
       </div>
     </div>
     """
   end
-
 
   defp thread_avatars(assigns) do
     users =
