@@ -132,8 +132,6 @@ defmodule SlaxWeb.ChatRoomLive.Index do
   end
 
   def mount(_params, _session, socket) do
-
-
     socket
     |> assign(:page_title, "All rooms")
     |> stream_configure(:rooms, dom_id: fn {room, _} -> "rooms-#{room.id}" end)
