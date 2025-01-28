@@ -20,7 +20,7 @@ defmodule Slax.Chat do
   def list_rooms do
     Repo.all(from r in Room, order_by: [asc: :name])
   end
-  
+
   def count_room_pages do
     ceil(Repo.aggregate(Room, :count) / @room_page_size)
   end
@@ -40,6 +40,7 @@ defmodule Slax.Chat do
 
   def list_rooms_with_joined(page, %User{} = user) do
     offset = (page - 1) * @room_page_size
+
     query =
       from r in Room,
         left_join: m in RoomMembership,
@@ -112,13 +113,17 @@ defmodule Slax.Chat do
     |> Repo.update()
   end
 
-  def list_messages_in_room(%Room{id: room_id}) do
+  def list_messages_in_room(%Room{id: room_id}, opts \\ []) do
     Message
     |> where([m], m.room_id == ^room_id)
-    |> order_by([m], asc: :inserted_at, asc: :id)
+    |> order_by([m], desc: :inserted_at, desc: :id)
     |> preload(:user)
     |> preload_message_user_and_replies()
-    |> Repo.all()
+    |> Repo.paginate(
+      after: opts[:after],
+      limit: 3,
+      cursor_fields: [inserted_at: :desc, id: :desc]
+    )
   end
 
   defp preload_message_user_and_replies(message_query) do
