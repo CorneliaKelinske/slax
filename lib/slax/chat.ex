@@ -7,6 +7,7 @@ defmodule Slax.Chat do
   import Ecto.Query
 
   @pubsub Slax.PubSub
+  @room_page_size 10
 
   def get_first_room! do
     Repo.one!(from r in Room, limit: 1, order_by: [asc: :name])
@@ -18,6 +19,10 @@ defmodule Slax.Chat do
 
   def list_rooms do
     Repo.all(from r in Room, order_by: [asc: :name])
+  end
+  
+  def count_room_pages do
+    ceil(Repo.aggregate(Room, :count) / @room_page_size)
   end
 
   def list_joined_rooms_with_unread_counts(%User{} = user) do
@@ -33,13 +38,16 @@ defmodule Slax.Chat do
     |> Repo.all()
   end
 
-  def list_rooms_with_joined(%User{} = user) do
+  def list_rooms_with_joined(page, %User{} = user) do
+    offset = (page - 1) * @room_page_size
     query =
       from r in Room,
         left_join: m in RoomMembership,
         on: r.id == m.room_id and m.user_id == ^user.id,
         select: {r, not is_nil(m.id)},
-        order_by: [asc: :name]
+        order_by: [asc: :name],
+        limit: ^@room_page_size,
+        offset: ^offset
 
     Repo.all(query)
   end
