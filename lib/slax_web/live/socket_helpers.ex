@@ -4,5 +4,4 @@ defmodule SlaxWeb.SocketHelpers do
   def noreply(socket), do: {:noreply, socket}
 
   def reply(socket, data), do: {:reply, data, socket}
-
 end
