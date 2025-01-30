@@ -463,6 +463,22 @@ defmodule SlaxWeb.ChatRoomLive do
     |> assign(:message_cursor, page.metadata.after)
   end
 
+  def handle_event("add-reaction", %{"emoji" => emoji, "message_id" => message_id}, socket) do
+    message = Chat.get_message!(message_id)
+
+    Chat.add_reaction(emoji, message, socket.assigns.current_user)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("remove-reaction", %{"message_id" => message, "emoji" => emoji}, socket) do
+    message = Chat.get_message!(message)
+
+    Chat.remove_reaction(emoji, message, socket.assigns.current_user)
+
+    {:noreply, socket}
+  end
+
   def handle_event("show-profile", %{"user-id" => user_id}, socket) do
     user = Accounts.get_user!(user_id)
     {:noreply, assign(socket, profile: user, thread: nil)}
@@ -624,6 +640,22 @@ defmodule SlaxWeb.ChatRoomLive do
     online_users = OnlineUsers.update(socket.assigns.online_users, diff)
 
     {:noreply, assign(socket, online_users: online_users)}
+  end
+  
+  def handle_info({:added_reaction, reaction}, socket) do
+    message = Chat.get_message!(reaction.message_id)
+
+    socket
+    |> refresh_message(message)
+    |> noreply()
+  end
+
+  def handle_info({:removed_reaction, reaction}, socket) do
+    message = Chat.get_message!(reaction.message_id)
+
+    socket
+    |> refresh_message(message)
+    |> noreply()
   end
 
   defp refresh_message(socket, message) do
