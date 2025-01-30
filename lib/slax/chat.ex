@@ -124,7 +124,7 @@ defmodule Slax.Chat do
       after: opts[:after],
       limit: 50,
       cursor_fields: [inserted_at: :desc, id: :desc]
-    ) 
+    )
   end
 
   defp preload_message_user_and_replies(message_query) do
@@ -133,13 +133,11 @@ defmodule Slax.Chat do
     preload(message_query, [:user, replies: ^{replies_query, [:user]}])
   end
 
-
   defp preload_reactions(message_query) do
     reactions_query = from r in Reaction, order_by: [asc: :id]
 
     preload(message_query, reactions: ^reactions_query)
   end
-
 
   def change_message(message, attrs \\ %{}) do
     Message.changeset(message, attrs)
@@ -218,9 +216,28 @@ defmodule Slax.Chat do
   end
 
   def add_reaction(emoji, %Message{} = message, %User{} = user) do
-    %Reaction{message_id: message.id, user_id: user.id}
-    |> Reaction.changeset(%{emoji: emoji})
-    |> Repo.insert()
+    with {:ok, reaction} <-
+           %Reaction{message_id: message.id, user_id: user.id}
+           |> Reaction.changeset(%{emoji: emoji})
+           |> Repo.insert() do
+      Phoenix.PubSub.broadcast!(@pubsub, topic(message.room_id), {:added_reaction, reaction})
+
+      {:ok, reaction}
+    end
+  end
+
+  def remove_reaction(emoji, %Message{} = message, %User{} = user) do
+    with %Reaction{} = reaction <-
+           Repo.one(
+             from(r in Reaction,
+               where: r.message_id == ^message.id and r.user_id == ^user.id and r.emoji == ^emoji
+             )
+           ),
+         {:ok, reaction} <- Repo.delete(reaction) do
+      Phoenix.PubSub.broadcast!(@pubsub, topic(message.room_id), {:removed_reaction, reaction})
+
+      {:ok, reaction}
+    end
   end
 
 end
