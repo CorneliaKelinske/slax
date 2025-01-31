@@ -268,6 +268,7 @@ defmodule SlaxWeb.ChatRoomLive do
         current_user={@current_user}
       />
     </.modal>
+    <div id="emoji-picker-wrapper" class="absolute" phx-update="ignore">></div>
     """
   end
 
@@ -641,7 +642,7 @@ defmodule SlaxWeb.ChatRoomLive do
 
     {:noreply, assign(socket, online_users: online_users)}
   end
-  
+
   def handle_info({:added_reaction, reaction}, socket) do
     message = Chat.get_message!(reaction.message_id)
 
